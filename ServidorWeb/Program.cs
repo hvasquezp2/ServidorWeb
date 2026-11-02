@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using ServidorWeb.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,16 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<SimulacionService>();
 
 var app = builder.Build();
+
+// Detrás de un proxy (Render, Cloudflare, Nginx) el tráfico llega por HTTP;
+// estos encabezados indican cuál era el protocolo y la IP originales.
+var forwardedOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedOptions.KnownNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
