@@ -1,0 +1,222 @@
+﻿@{
+    ViewData["Title"] = "Simulación de servidor concurrente";
+}
+
+<div class="container mt-4">
+    <div class="dashboard-header">
+        <h1 class="mb-2">
+            <i class="bi bi-cpu"></i>
+            Simulación de servidor concurrente
+        </h1>
+
+        <p class="mb-0">
+            Monitoreo en tiempo real de solicitudes y trabajadores.
+        </p>
+    </div>
+
+    <div class="card-modern p-4 mb-4">
+
+        <h5 class="mb-4">
+            <i class="bi bi-sliders2"></i>
+            Configuración
+        </h5>
+
+        <form id="configurationForm">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="workerCount" class="form-label">
+                        Número de trabajadores
+                    </label>
+                    <input type="number"
+                           id="workerCount"
+                           name="MaxTrabajadores"
+                           class="form-control"
+                           value="2"
+                           min="1"
+                           max="20"
+                           required />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="requestCount" class="form-label">
+                        Número de solicitudes
+                    </label>
+                    <input type="number"
+                           id="requestCount"
+                           name="CapacidadSolicitudes"
+                           class="form-control"
+                           value="5"
+                           min="1"
+                           max="500"
+                           required />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="timeoutSeconds" class="form-label">
+                        Tiempo máximo por solicitud (segundos)
+                    </label>
+                    <input type="number"
+                           id="timeoutSeconds"
+                           name="TiempoMaximoEspera"
+                           class="form-control"
+                           value="15"
+                           min="1"
+                           max="300"
+                           required />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="minProcessingTime" class="form-label">
+                        Tiempo mínimo de procesamiento (segundos)
+                    </label>
+                    <input type="number"
+                           id="minProcessingTime"
+                           name="TiempoMinimoProcesamientoMs"
+                           class="form-control"
+                           value="2"
+                           min="1"
+                           max="300"
+                           required />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="maxProcessingTime" class="form-label">
+                        Tiempo máximo de procesamiento (segundos)
+                    </label>
+                    <input type="number"
+                           id="maxProcessingTime"
+                           name="TiempoMaximoProcesamientoMs"
+                           class="form-control"
+                           value="8"
+                           min="1"
+                           max="300"
+                           required />
+                </div>
+            </div>
+            <button type="submit"
+                    id="startButton"
+                    class="btn btn-start text-white">
+                ▶ Iniciar simulación
+            </button>
+        </form>
+
+    </div>
+
+    <div class="mb-4">
+        Estado:
+
+        <span id="simulationStatus"
+              class="status-badge status-stopped">
+            Detenida
+        </span>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <h5>Tiempo total de la simulación: </h5>
+        <h3 id="tiempoTotalSimulacion">00:00:00</h3>
+    </div>
+
+    <p id="errorMessage" class="text-danger fw-bold"></p>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="card metric-card bg-queue p-4">
+                <div>📥 En cola</div>
+                <div id="queueCount" class="metric-value">0</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card metric-card bg-processing p-4">
+                <div>⚙️ Procesando</div>
+                <div id="processingCount" class="metric-value">0</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card metric-card bg-completed p-4">
+                <div>✅ Completadas</div>
+                <div id="completedCount" class="metric-value">0</div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card metric-card bg-timeout p-4">
+                <div>⏳ Tiempo agotado</div>
+                <div id="timedOutCount" class="metric-value">0</div>
+            </div>
+        </div>
+
+    </div>
+
+    <h3 class="section-title">
+        👷 Trabajadores
+    </h3>
+
+    <div id="workersContainer"
+         class="row g-3">
+    </div>
+
+    <div id="workersContainer" class="row"></div>
+
+    <h3 class="section-title">
+        📋 Solicitudes en espera
+    </h3>
+
+    <div class="table-modern">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Estado</th>
+                    <th>Llegada</th>
+                </tr>
+            </thead>
+            <tbody id="waitingTable"></tbody>
+        </table>
+    </div>
+
+    <h3 class="section-title mt-5">
+        ✅ Solicitudes completadas
+    </h3>
+
+    <div class="table-modern">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Proceso</th>
+                    <th>Hora llegada</th>
+                    <th>Inicio Atención</th>
+                    <th>Espera en cola</th>
+                    <th>Tiempo de proceso</th>
+                    <th>Tiempo total proceso</th>
+                </tr>
+            </thead>
+            <tbody id="completedTable"></tbody>
+        </table>
+    </div>
+    <br />
+    <div class="table-modern">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Proceso</th>
+                    <th>Hora llegada</th>
+                    <th>Inicio Atención</th>
+                    <th>Hora Expiración</th>
+                    <th>Tiempo de espera</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody id="timedOutTable"></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/simulacion.js"
+            asp-append-version="true"></script>
+}
