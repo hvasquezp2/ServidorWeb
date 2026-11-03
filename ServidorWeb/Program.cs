@@ -3,6 +3,9 @@ using ServidorWeb.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseWindowsService();
+
+// Add services to the container.
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<SimulacionService>();
